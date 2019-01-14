@@ -1,0 +1,51 @@
+version: '3.6'
+
+secrets:
+  psql_pwfile:
+    file: ./psql_pwfile
+
+services:
+
+  postgres:
+    image: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - "./pgdata:/pgdata"
+      - "./postgresql.conf:/postgresql.conf"
+      - "./archive:/archive"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /pgdata
+
+  pg_backup:
+    image: lovelysystems/docker-pg-backup:dev
+    secrets:
+      - psql_pwfile
+    volumes:
+      - "./pgdata:/pgdata"
+    environment:
+      PGHOST: postgres
+      PGUSER: postgres
+      BACKUP_SCHEDULE: "@every 5m"
+      WALE_S3_PREFIX: s3://postgres/wal
+      AWS_ACCESS_KEY_ID: AKIAIOSFODNN7EXAMPLE
+      AWS_SECRET_ACCESS_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+      # only needed for non aws buckets
+      WALE_S3_ENDPOINT: http+path://minio:9000
+      WALE_LOG_DESTINATION: stderr
+
+  # S3 compatible store for testing
+  minio:
+    image: minio/minio
+    volumes:
+      - "./data:/data"
+    ports:
+      - "9000:9000"
+    environment:
+      MINIO_ACCESS_KEY: AKIAIOSFODNN7EXAMPLE
+      MINIO_SECRET_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+      MINIO_SSE_MASTER_KEY: 'my-minio-key:6368616e676520746869732070617373776f726420746f206120736563726574'
+    entrypoint: sh
+    command: -c 'mkdir -p /data/postgres && /usr/bin/minio server /data'
