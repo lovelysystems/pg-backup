@@ -14,6 +14,8 @@ RUN set -ex \
     && pip install wal-e[aws] \
     && apk del build-base
 
+COPY ./scripts /scripts
+
 COPY ./entrypoint.sh /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
