@@ -62,12 +62,12 @@ To restore the db a couple of steps must be taken:
 * place a recovery.conf file in the /pgdata directory
 * start postgres
 
-To make this all a bit easier a script is located at /scripts/restore.sh
+To make this all a bit easier a script is located at /usr/local/bin/restore.sh
 It needs the RESTORE_COMMAND variable to be set to the correct command to 
 restore the wal files. Which it uses to create the 
 [recovery.conf](https://www.postgresql.org/docs/9.2/continuous-archiving.html) 
 file and place it inside the /pgdata directory. The backup can be specified as 
-the first argument for the script. For example `/scripts/restore.sh LATEST`.
+the first argument for the script. For example `restore.sh LATEST`.
 
 The whole scenario can be tested by starting everything with ./gradlew localDev.
 Making some changes to the Database and then executing the test_backup.sh script.
