@@ -1,8 +1,8 @@
 version: '3.6'
 
 secrets:
-  psql_pwfile:
-    file: ./psql_pwfile
+  pgpass:
+    file: ./pgpass
 
 services:
 
@@ -14,6 +14,7 @@ services:
       - "./pgdata:/pgdata"
       - "./postgresql.conf:/postgresql.conf"
       - "./archive:/archive"
+      - "./postgres_config.sql:/docker-entrypoint-initdb.d/postgres_config.sql"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -22,14 +23,16 @@ services:
   pg_backup:
     image: lovelysystems/docker-pg-backup:dev
     secrets:
-      - psql_pwfile
+      - pgpass
     volumes:
       - "./pgdata:/pgdata"
     environment:
       PGHOST: postgres
       PGUSER: postgres
       BACKUP_SCHEDULE: "@every 5m"
-      WALE_S3_PREFIX: s3://postgres/wal
+      BACKUPS_TO_RETAIN: 5
+      RESTORE_COMMAND: 'cp /archive/%f %p'
+      WALE_S3_PREFIX: s3://postgres/base
       AWS_ACCESS_KEY_ID: AKIAIOSFODNN7EXAMPLE
       AWS_SECRET_ACCESS_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
       # only needed for non aws buckets
