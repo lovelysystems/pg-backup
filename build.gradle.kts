@@ -4,7 +4,7 @@ plugins {
 
 lovely {
     gitProject()
-    dockerProject("lovelysystems/docker-pg-backup")
+    dockerProject("lovelysystems/pg-backup")
 
     with(dockerFiles) {
         from("docker")

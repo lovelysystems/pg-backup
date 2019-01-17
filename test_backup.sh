@@ -22,7 +22,7 @@ echo "Stopping Postgres Conatiner"
 docker stop ${postgres_container}
 
 echo "Restore Backup"
-docker exec ${backup_container} /bin/sh -c '/scripts/restore.sh LATEST'
+docker exec ${backup_container} /bin/sh -c 'restore.sh LATEST'
 
 echo "Start Postgres container again"
 docker start ${postgres_container}
