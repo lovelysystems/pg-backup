@@ -1,7 +1,6 @@
 # Changes for pg_backup
 
-unreleased
-==========
+## 2019-02-05 / 0.1.0
 
 - add script to check backup status
 
