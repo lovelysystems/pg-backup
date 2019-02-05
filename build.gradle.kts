@@ -39,7 +39,7 @@ tasks {
     val localDev by creating {
         group = "Development"
         description = "Starts local development based on Docker containers"
-        dependsOn(localDevDown, "buildDockerImage")
+        dependsOn("buildDockerImage")
         doLast {
             exec {
                 commandLine(
