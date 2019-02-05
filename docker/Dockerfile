@@ -11,7 +11,7 @@ RUN set -ex \
 		\
     # Install wal-e
     && apk add --no-cache pv lzo postgresql-client build-base \
-    && pip install wal-e[aws] \
+    && pip install wal-e[aws] boto3\
     && apk del build-base
 
 COPY ./scripts /usr/local/bin/

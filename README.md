@@ -62,12 +62,12 @@ To restore the db a couple of steps must be taken:
 * place a recovery.conf file in the /pgdata directory
 * start postgres
 
-To make this all a bit easier a script is located at /usr/local/bin/restore.sh
+To make this all a bit easier a script is located at /usr/local/bin/restore
 It needs the RESTORE_COMMAND variable to be set to the correct command to 
 restore the wal files. Which it uses to create the 
 [recovery.conf](https://www.postgresql.org/docs/9.2/continuous-archiving.html) 
 file and place it inside the /pgdata directory. The backup can be specified as 
-the first argument for the script. For example `restore.sh LATEST`.
+the first argument for the script. For example `restore LATEST`.
 
 The whole scenario can be tested by starting everything with ./gradlew localDev.
 Making some changes to the Database and then executing the test_backup.sh script.
@@ -77,3 +77,15 @@ restoring the backup, afterwards starting postgres again. At this point postgres
 should fetch all missing wal files and then be in the same state as before starting
 the script.
 
+## check backup status
+
+It's possible to use the check_backup command inside the container to check if
+the backups reached the specified aws bucket. It needs two extra environment
+variables to be set:
+* BASE_BACKUP_INTERVAL_MINUTES (Default = 10080 = 1 week)
+  * scripts checks if the last backup isn't older than the interval + 5 minutes
+* CHECKPOINT_TIMEOUT_SECONDS (Default = 300 -> default in postgres)
+  * corresponds to the postgres setting `checkpoint_timeout`, after this time
+    postgres needs to create a new wal file and archive the old
+  * script checks if the last wal file archived isn't older than the
+    timeout + 2 minutes.

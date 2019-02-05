@@ -1,0 +1,74 @@
+#! /usr/local/bin/python
+
+import boto3
+import re
+import os
+from datetime import datetime, timezone, timedelta, MINYEAR
+from urllib.parse import urlparse
+from functools import reduce
+from sys import exit
+
+client_settings = {}
+client_settings['aws_access_key_id'] = os.getenv('AWS_ACCESS_KEY_ID')
+client_settings['aws_secret_access_key'] = os.getenv('AWS_SECRET_ACCESS_KEY')
+
+parts = urlparse(os.getenv('WALE_S3_PREFIX', ''))
+bucket = parts.hostname
+base_prefix = parts.path[1:]
+
+if os.getenv('WALE_S3_ENDPOINT'):
+    client_settings['endpoint_url'] = (
+        re.sub('\+.*?:', ':', os.getenv('WALE_S3_ENDPOINT'))
+    )
+
+s3client = boto3.client('s3', **client_settings)
+
+checkoutpoint_timeout = timedelta(seconds=(
+    int(os.getenv('CHECKPOINT_TIMEOUT_SECONDS', 300)) + 120))
+base_backup_schedule = timedelta(minutes=(
+    int(os.getenv('BASE_BACKUP_INTERVAL_MINUTES', 60 * 24 * 7)) + 5))
+
+
+def list_objects(bucket, prefix, **kwargs):
+    resp = s3client.list_objects_v2(Bucket=bucket, Prefix=prefix, **kwargs)
+    if resp['IsTruncated']:
+        contents = resp['Contents']
+        while resp['IsTruncated']:
+            resp = s3client.list_objects_v2(
+                Bucket=bucket,
+                Prefix=prefix,
+                ContinuationToken=resp['NextContinuationToken'],
+                **kwargs
+            )
+            contents += resp['Contents']
+        resp['Contents'] = contents
+    return resp
+
+
+def compareTimeStamp(object1, object2):
+    return (object1 if object1['LastModified'] > object2['LastModified']
+            else object2)
+
+
+def check_backup(bucket, prefix, delta):
+    resp = list_objects(bucket, prefix)
+    contents = resp.get('Contents', {})
+    newestObject = (reduce(compareTimeStamp, contents)
+                    if type(contents) is list else contents)
+    return (datetime.now(timezone.utc) -
+            newestObject.get('LastModified',
+                             datetime(MINYEAR, 1, 1, tzinfo=timezone.utc)) <
+            delta)
+
+
+wal_check = check_backup(bucket, base_prefix + '/wal',
+                         checkoutpoint_timeout)
+base_check = check_backup(bucket, base_prefix + '/base',
+                          base_backup_schedule)
+
+if not wal_check or not base_check:
+    print('wal file check ok: ', wal_check)
+    print('base backup check ok: ', base_check)
+    exit(1)
+
+print('backups ok')

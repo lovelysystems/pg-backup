@@ -21,7 +21,7 @@ services:
       PGDATA: /pgdata
 
   pg_backup:
-    image: lovelysystems/docker-pg-backup:dev
+    image: lovelysystems/pg-backup:dev
     secrets:
       - pgpass
     volumes:
@@ -32,6 +32,8 @@ services:
       BACKUP_SCHEDULE: "@every 5m"
       BACKUPS_TO_RETAIN: 5
       RESTORE_COMMAND: 'cp /archive/%f %p'
+      CHECKPOINT_TIMEOUT_SECONDS: 300
+      BASE_BACKUP_INTERVAL_MINUTES: 10080
       WALE_S3_PREFIX: s3://postgres/base
       AWS_ACCESS_KEY_ID: AKIAIOSFODNN7EXAMPLE
       AWS_SECRET_ACCESS_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
