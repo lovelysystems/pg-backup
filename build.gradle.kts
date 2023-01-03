@@ -1,12 +1,13 @@
 plugins {
-    id("com.lovelysystems.gradle") version ("1.1.0")
+    id("com.lovelysystems.gradle") version ("1.10.0")
 }
 
 lovely {
     gitProject()
-    dockerProject("lovelysystems/pg-backup")
-
-    with(dockerFiles) {
+    dockerProject(
+        "lovelysystems/pg-backup",
+        platforms = listOf("linux/amd64")
+    ) {
         from("docker")
     }
 }
