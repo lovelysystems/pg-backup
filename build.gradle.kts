@@ -5,7 +5,7 @@ plugins {
 lovely {
     gitProject()
     dockerProject(
-        "lovelysystems/pg-backup",
+        "ghcr.io/lovelysystems/pg-backup",
         platforms = listOf("linux/amd64")
     ) {
         from("docker")

@@ -21,7 +21,7 @@ services:
       PGDATA: /pgdata
 
   pg_backup:
-    image: lovelysystems/pg-backup:dev
+    image: ghcr.io/lovelysystems/pg-backup:dev
     secrets:
       - pgpass
     volumes:
